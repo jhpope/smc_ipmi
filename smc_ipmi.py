@@ -62,12 +62,16 @@ def parse_pminfo(pm_output: str, temp_unit: str):
     points = []
 
     for row in csv_reader:
-        # skip non-data rows
-        if len(row) < 2 or row[0].strip().lower() == 'item' or row[0].strip().startswith('-') or \
+        if len(row) <= 0 or row[0].strip().lower() == 'item' or row[0].strip().startswith('-') or \
                 row[0].strip().lower().startswith('pmbus') or row[0].strip().lower().startswith('pws'):
+            # skip non-data rows
+            continue
+        elif row[0].strip().lower().startswith('[slaveaddress'):
+            # load power module index
+            module = re.search("\[Module (\d+)\]", row[0]).group(1)
             continue
 
-        tag = 'sensor=PMBus_' + row[0].strip().replace(' ', '\ ')
+        tag = f'sensor=PMBus_{module}_' + row[0].strip().replace(' ', '\ ')
         value = row[1].strip()
         if row[0].strip().lower() == 'status':
             status = '1' if row[1].strip().find('STATUS OK') > 0 else '0'
